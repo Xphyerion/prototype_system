@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+
+
+{% block content %}
+  {% if messages %}
+        <ul class="messages">
+               {% for message in messages %}
+                     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+               {% endfor %}
+       </ul>
+    {% endif %}
+
+  <h1>{{title}}</h1>
+
+   <form method='POST' action=''>{% csrf_token %}
+    {{form|crispy}}
+        <input type="submit" value='Search'/>
+</form>
+<br>
+
+  <div class="display_table ">
+        <table class='table table-striped table-hover table-bordered '>
+          <thead class='table-dark'>
+            <tr>
+              <th>COUNT</th>
+              <th>CATEGORY</th>
+              <th>ITEM NAME</th>
+              <th>QUANTITY IN STORE</th>
+              <th>REORDER</th>
+              <th>LAST UPDATED</th>
+              <th>DELETE</th>
+            </tr>
+          </thead>
+        {% for instance in queryset %}
+            <tr>
+
+              <td>{{forloop.counter}}</td>
+              <td>{{instance.category}}</td>
+              <td><a href="{% url 'update_items' instance.id %}">{{instance.item_name}}</a></td>
+              <td>
+                {% if instance.quantity <= instance.reorder_level %}
+                    <div style="background-color: orange;">{{instance.quantity}}</div>
+                {% else %}
+                    {{instance.quantity}}
+                {% endif %}
+              </td>
+              <td><a href="{% url 'reorder_level' instance.id %}">{{instance.reorder_level}}</a></td>
+              <td>{{instance.last_updated}}</td>
+              <td><a href="{% url 'delete_items' instance.id %}">Delete</a></td>
+            </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+{% endblock %}

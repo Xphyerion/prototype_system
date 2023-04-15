@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div  class="position-absolute top-50 start-50 translate-middle">
+<h1>Login</h1>
+<br>
+
+<form method="POST" action="{% url 'home' %}">
+	{% csrf_token %}
+	<form>
+  <div class="mb-3">
+    <input type="text" class="form-control" name="username" placeholder="Username" required>
+  </div>
+  <div class="mb-3">
+    <input type="password" class="form-control" name="password"placeholder="Password" required>
+  </div>
+  <button type="submit" class="btn btn-secondary">Login</button>
+<!--
+  <a class="link" href="#">Forgot password?</a>
+-->
+</form>
+</form>
+
+</div>
+
+
+
+{% endblock %}
