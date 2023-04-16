@@ -1,25 +1,15 @@
 {% if user.is_authenticated %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="height: 0.75in">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'list_item' %}">SM|sys</a>
+    <a class="navbar-brand" href="{% url 'list_item' %}">Sm|sys</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        {% if user.is_staff %}
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'add_items' %}">Add Item</a>
-        </li>
-        <li class="nav-item">
-            <li class="nav-item">
-               <a class="nav-link" href="/list_history">List History</a>
-            </li>
-        </li>
-        {% endif %}
-      </ul>
-      <a class="btn btn-outline-danger" type="submit" href="{% url 'logout' %}">Logout</a>
-      {% endif %}
+      <div class="d-flex align-items-center">
+        <a href="#"><div class="rounded bg-light px-2 py-1 me-2" style="width: 2in">Logged in as | {{ user.username }}</div></a>
+        <a class="btn btn-outline-danger" type="submit" href="{% url 'logout' %}">Logout&nbsp;</a>
+      </div>
     </div>
   </div>
 </nav>
+{% endif %}

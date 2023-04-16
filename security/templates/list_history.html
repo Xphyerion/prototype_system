@@ -1,35 +1,66 @@
 {% extends 'base.html' %}
-
+{% load crispy_forms_tags %}
+{% load static %}
 {% block content %}
 
-<div class="display_table">
-        <table class='table'>
-          <thead>
-            <tr>
-              <th>COUNT</th>
-              <th>ID</th>
-              <th>CATEGORY</th>
-              <th>ITEM NAME</th>
-              <th>QUANTITY IN STORE</th>
-              <th>ISSUE QUANTITY</th>
-              <th>RECEIVE QUANTITY</th>
-              <th>LAST UPDATED</th>
-            </tr>
-          </thead>
-        {% for instance in queryset %}
-            <tr>
+    <link href="{% static 'js/jquery-ui.1.13.2/jquery-ui.min.css' %}" rel="stylesheet">
+    <link href="{% static 'js/jquery-ui.1.13.2/jquery-ui.structure.min.css' %}" rel="stylesheet">
+    <link href="{% static 'js/jquery-ui.1.13.2/jquery-ui.theme.min.css' %}" rel="stylesheet">
+     
+     
+    <script src="{% static 'js/jquery-3.6.4.min.js' %}"></script>
+    <script src="{% static 'js/jquery-ui.1.13.2/jquery-ui.min.css.js' %}"></script>
+    <script src="{% static 'js/calendar.js' %}"></script>
 
-              <td>{{forloop.counter}}</td>
-              <td>{{instance.id}}</td>
-              <td>{{instance.category}}</td>
-              <td><{{instance.item_name}}</td>
-              <td>{{instance.quantity}}</td>
-              <td>{{instance.issue_quantity}}</td>
-              <td>{{instance.receive_quantity}}</td>
-              <td>{{instance.last_updated}}</td>
-            </tr>
-        {% endfor %}
-      </table>
-    </div>
+
+    <div class="row"><!--Start of row-->
+      <div class="col-sm-2"><!--Start of first col-->  
+        <form method='POST' action=''>{% csrf_token %}
+                {{form|crispy}}
+                <input type="submit" value='Search'/>
+        </form>
+      </div>
+      <div class="col-sm-10"><!--Start of second col-->
+          <div class="display_table">
+                <table class='table'>
+                  <thead>
+                    <tr>
+                      <th>COUNT</th>
+                      <th>ID</th>
+                      <th>Category</th>
+                      <th>Item Name</th>
+                      <th>Available Quantity</th>
+                      <th>Issued Quantity</th>
+                      <th>Issued By</th>
+                      <th>Issued To</th>
+                      <th>Restock Quantity</th>
+                      <th>Restock By</th>
+                      <th>Created On</th>
+                      <th>Updated On</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                {% for instance in queryset %}
+                    <tr>
+
+                      <td>{{forloop.counter}}</td>
+                      <td>{{instance.id}}</td>
+                      <td>{{instance.category}}</td>
+                      <td>{{instance.item_name}}</td>
+                      <td>{{instance.quantity}}</td>
+                      <td>{{instance.issue_quantity}}</td>
+                      <td>{{instance.issue_by}}</td>
+                      <td>{{instance.issue_to}}</td>
+                      <td>{{instance.receive_quantity}}</td>
+                      <td>{{instance.receive_by}}</td>
+                      <td>{{instance.timestamp}}</td>
+                      <td>{{instance.last_updated}}</td>
+                      <td></td>
+                    </tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div>
+        </div>  
 
 {% endblock %}

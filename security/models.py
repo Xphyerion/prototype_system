@@ -16,11 +16,11 @@ class Stock(models.Model):
 	issue_quantity = models.IntegerField(default='0', blank=True, null=True)
 	issue_by = models.CharField(max_length=50, blank=True, null=True)
 	issue_to = models.CharField(max_length=50, blank=True, null=True)
-	phone_number = models.CharField(max_length=50, blank=True, null=True)
 	created_by = models.CharField(max_length=50, blank=True, null=True)
 	reorder_level = models.IntegerField(default='0', blank=True, null=True)
 	last_updated = models.DateTimeField(auto_now_add=False, auto_now=True)
 	timestamp = models.DateTimeField(auto_now_add=True, auto_now=False)
+	
 	
 	def __str__(self):
 		return self.item_name + ' ' + str(self.quantity)
@@ -35,7 +35,6 @@ class Stock_History_log(models.Model):
 	issue_quantity = models.IntegerField(default='0', blank=True, null=True)
 	issue_by = models.CharField(max_length=50, blank=True, null=True)
 	issue_to = models.CharField(max_length=50, blank=True, null=True)
-	phone_number = models.CharField(max_length=50, blank=True, null=True)
 	created_by = models.CharField(max_length=50, blank=True, null=True)
 	reorder_level = models.IntegerField(default='0', blank=True, null=True)
 	last_updated = models.DateTimeField(auto_now_add=False, auto_now=True, null=True)

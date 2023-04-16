@@ -3,20 +3,27 @@
 {% block content %}
 
 <a href="{% url 'issue_items' queryset.id %}"><div class='btn btn-danger'>ISSUE THIS ITEM</div></a>
-<a href="{% url 'receive_items' queryset.id %}"><div class='btn btn-primary'>RECEIVE THIS ITEM</div></a>
+{% if user.is_staff %}
+<a href="{% url 'receive_items' queryset.id %}"><div class='btn btn-primary'>RESTOCK THIS ITEM</div></a>
+<a href="{% url 'reorder_level' queryset.id %}"><div class='btn btn-primary'>REORDER LEVEL</div></a>
+{% endif %}
         <br><br>
-        <div class="display_table">
+        <div class="display_table"> 
           <table class='table'>
                   <tr>
                     <th>ITEM NAME</th>
                     <th>QUANTITY IN STORE</th>
-                    <th>LAST UPDATED</th>
+                    <th>LAST TRANSACTION</th>
+                    <th>ADDED ON</th>
+                    <th>ADDED BY</th>
                     <th>REORDER LEVEL</th>
                   </tr>
                   <tr>
                     <td>{{queryset.item_name}}</td>
                     <td>{{queryset.quantity}}</td>
                     <td>{{queryset.last_updated}}</td>
+                    <td>{{queryset.timestamp}}</td>
+                    <td>{{queryset.created_by}}</td>
                     <td>{{queryset.reorder_level}}</td>
                   </tr>
           </table>

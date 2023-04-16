@@ -6,54 +6,74 @@
 
 
 {% block content %}
-  {% if messages %}
-        <ul class="messages">
-               {% for message in messages %}
-                     <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-               {% endfor %}
-       </ul>
-    {% endif %}
+  
 
-  <h1>{{title}}</h1>
+  
 
-   <form method='POST' action=''>{% csrf_token %}
-    {{form|crispy}}
-        <input type="submit" value='Search'/>
-</form>
-<br>
+<div class="row"><!--Start of row-->
+  <div class="col-sm-2"><!--Start of first col-->
+       <h1>Search</h1><br><br>
+       <form method='POST' action=''>{% csrf_token %}
+        {{form|crispy}}
+            <input class="btn btn-primary " type="submit" value='Search'/>
+        </form><br>
+        <a href="/list_history"><div class ="btn btn-primary mybutton">History</div></a><br><br>
+        <a href="/add_category"><div class="btn btn-primary mybutton">Add Category</div></a><br><br>
+        <a href="/add_items"><div class="btn btn-primary mybutton">Add Item</div></a><br><br>
+      <br>
+  </div>
+  <div class="col-sm-10"><!--Start of second col-->
+    <style>h1 { text-align: center; }</style>
+      <h1>{{title}}</h1>
+      <br> 
+      <br>
+      <div class="display_table ">
+            <table class='table table-striped table-hover table-bordered '>
+              <thead class='table-dark'>
+                <tr>
+                  <th>COUNT</th>
+                  <th>CATEGORY</th>
+                  <th>ITEM NAME</th>
+                  <th>QUANTITY IN STORE</th>
+                  {% if user.is_staff%}
+                  {% endif %}
+                  <th>LAST TRANSACTION</th>
+                  {% if user.is_staff %}
+                  <th>DELETE</th>
+                  {% endif %}
+                </tr>
+              </thead>
+            {% for instance in queryset %}
+                <tr>
 
-  <div class="display_table ">
-        <table class='table table-striped table-hover table-bordered '>
-          <thead class='table-dark'>
-            <tr>
-              <th>COUNT</th>
-              <th>CATEGORY</th>
-              <th>ITEM NAME</th>
-              <th>QUANTITY IN STORE</th>
-              <th>REORDER</th>
-              <th>LAST UPDATED</th>
-              <th>DELETE</th>
-            </tr>
-          </thead>
-        {% for instance in queryset %}
-            <tr>
-
-              <td>{{forloop.counter}}</td>
-              <td>{{instance.category}}</td>
-              <td><a href="{% url 'update_items' instance.id %}">{{instance.item_name}}</a></td>
-              <td>
-                {% if instance.quantity <= instance.reorder_level %}
-                    <div style="background-color: orange;">{{instance.quantity}}</div>
-                {% else %}
-                    {{instance.quantity}}
-                {% endif %}
-              </td>
-              <td><a href="{% url 'reorder_level' instance.id %}">{{instance.reorder_level}}</a></td>
-              <td>{{instance.last_updated}}</td>
-              <td><a href="{% url 'delete_items' instance.id %}">Delete</a></td>
-            </tr>
-        {% endfor %}
-      </table>
-    </div>
-
+                  <td>{{forloop.counter}}</td>
+                  <td><a href="{% url 'update_items' instance.id %}">{{instance.category}}</a></td>
+                  <td><a href="{% url 'stock_detail' instance.id %}">{{instance.item_name}}</a></td>
+                  <td>
+                  {% if user.is_staff %}  
+                        {% if instance.quantity <= instance.reorder_level %}
+                            <div style="background-color: orange;">
+                              {{instance.quantity}}    
+                            </div>
+                        {% else %}
+                            {{instance.quantity}}
+                        {% endif %}
+                  {% else %}
+                        {% if instance.quantity <= instance.reorder_level %}
+                            <div style="background-color: orange;">{{instance.quantity}}</div>
+                        {% else %}
+                            {{instance.quantity}}
+                        {% endif %}
+                  {% endif %}
+                  </td>
+                  <td>{{instance.last_updated}}</td>
+                  {% if user.is_staff %}
+                  <td><a href="{% url 'delete_items' instance.id %}">Delete</a></td>
+                  {% endif %}
+                </tr>
+            {% endfor %}
+          </table>
+        </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,0 +1,83 @@
+postgresql
+1st password : password1231
+2nd password : 3reyPintor
+
+database name : prototypeDB
+
+login/group roles
+account 
+name : SMSprototypeDB
+password : protopass
+
+install required modules
+pip install -r requirements.txt
+
+trigger code :
+CREATE OR REPLACE FUNCTION after_security_stock_update()
+RETURNS TRIGGER AS $$
+
+BEGIN
+    IF NEW.issue_quantity = 0 THEN       
+        INSERT INTO security_stock_history_log (
+            id, 
+            category_id, 
+            item_name, 
+            quantity,
+            issue_quantity,
+            receive_quantity, 
+            receive_by,                        
+            last_updated, 
+        ) VALUES (
+            NEW.id, 
+            NEW.category_id, 
+            NEW.item_name, 
+            NEW.quantity,
+            NEW.issue_quantity,
+            NEW.receive_quantity, 
+            NEW.receive_by,                        
+            NEW.last_updated, 
+        );
+    ELSIF NEW.receive_quantity = 0 THEN
+        INSERT INTO security_stock_history_log (
+            id, 
+            category_id, 
+            item_name, 
+            quantity,
+            issue_quantity,
+            issue_by,
+            receive_quantity,                         
+            last_updated,
+        ) VALUES (
+            NEW.id, 
+            NEW.category_id, 
+            NEW.item_name, 
+            NEW.quantity,
+            NEW.issue_quantity,
+            NEW.issue_by,
+            NEW.receive_quantity,                       
+            NEW.last_updated,
+        );
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+after trigger created :
+
+DROP TRIGGER IF EXISTS after_security_stock_update_trigger ON security_stock;
+CREATE TRIGGER after_security_stock_update_trigger 
+AFTER INSERT OR UPDATE ON security_stock 
+FOR EACH ROW EXECUTE FUNCTION after_security_stock_update();
+
+
+psql commands
+
+\d security_stock_history_log
+
+ALTER TABLE security_stock_history_log DROP CONSTRAINT security_history_log_pkey;
+
+ALTER TABLE security_stock_history_log ALTER COLUMN id DROP IDENTITY;
+
+ALTER TABLE security_stock_history_log ALTER COLUMN id DROP NOT NULL;
+
