@@ -5,12 +5,12 @@
 
 {% block content %}
 <div class="position-absolute top-50 start-50 translate-middle">
-  <h1>{{title}}</h1>
+  <h1>Edit Reorder Level for {{ instance.item_name }}</h1>
   <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
     <input type="submit" class='btn btn-success' value="Save"/>
-    <a href="{% url 'list_item' %}"><div class='btn btn-dark' >Cancel</div></a>
+    <a href="{% url 'stock_detail' instance.id %}" class='btn btn-dark'>Cancel</a>
   </form>
 </div>
 {% endblock %}

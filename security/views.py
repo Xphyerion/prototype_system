@@ -7,8 +7,11 @@ from django.http import HttpResponse
 import csv
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
+from django.db.models import F, Q 
 
-#OK na
+
+# ok na
 def issue_items(request, pk):
     stock_item = Stock.objects.get(id=pk)
     form = IssueForm(request.POST or None, instance=stock_item, initial={'issue_by': request.user.username})
@@ -21,19 +24,21 @@ def issue_items(request, pk):
         else:
             if instance.quantity < issue_quantity:
                 messages.warning(request, "Not enough stock available. Current quantity is " + str(instance.quantity))
-                return redirect('/issue_items/'+str(instance.id))
+                return redirect(request.META.get('HTTP_REFERER', '/'))
             instance.quantity -= issue_quantity
-            instance.issue_to == instance.issue_to
             messages.success(request, "Issued SUCCESSFULLY. " + str(instance.quantity) + " " + str(instance.item_name) + "s now left in Store")
             instance.save()
-            return redirect('/stock_detail/'+str(instance.id))
+            return redirect('stock_detail', pk=stock_item.id)
 
     context = {
         "title": 'Issue ' + str(stock_item.item_name),
         "form": form,
-        "quantity_available": stock_item.quantity
+        "quantity_available": stock_item.quantity,
+        "stock_item": stock_item
     }
     return render(request, "issue_item.html", context)
+
+
 
 #OK na 
 def add_category(request):
@@ -45,7 +50,7 @@ def add_category(request):
         return redirect('/list_item')
     context = {
         "form": form,
-        "title": "Add Category",
+        "title": "name",
     }
     return render(request, "add_category.html", context)
 
@@ -63,7 +68,7 @@ def receive_items(request, pk):
             instance.receive_by = request.user.username
             instance.save()
             messages.success(request, f"Received SUCCESSFULLY. {instance.quantity} {instance.item_name}s now in Store")
-            return redirect('/stock_detail/' + str(instance.id))
+            return redirect('stock_detail', pk=stock_item.id)
     else:
         form = ReceiveForm(instance=stock_item)
         form.fields['receive_by'].initial = request.user.username  # set the current user's username as the value of the hidden field
@@ -94,7 +99,8 @@ def update_items(request, pk):
             return redirect('/list_item')
 
     context = {
-        'form': form
+        'form': form,
+        "title": 'Update Item name & Category : ' + str(queryset.item_name),
     }
     return render(request, 'add_items.html', context)
 
@@ -109,6 +115,7 @@ def add_items(request):
             stock.item_name = stock.item_name.upper()
             stock.created_by = request.user.username
             stock.save()
+            messages.success(request, 'Item added successfully!')
             return redirect('/list_item')
     else:
         form = StockCreateForm(user=request.user)
@@ -128,41 +135,54 @@ def stock_detail(request, pk):
 	}
 	return render(request, "stock_detail.html", context)
 
-
-
+#ok
 def list_item(request):
-	title = 'Inventory'
-	form = StockSearchForm(request.POST or None)
-	queryset = Stock.objects.all()
-	context = {
-		"title": title,
-		"queryset": queryset,
-		"form":form
-	}
-	if request.method == 'POST':
-		category = form['category'].value()
-		queryset = Stock.objects.filter(
-										item_name__icontains=form['item_name'].value()
-										)
-		if (category != ''):
-			queryset = queryset.filter(category_id=category)
+    title = 'Stocks'
+    form = StockSearchForm(request.POST or None)
+    queryset = Stock.objects.all()
+    p = Paginator(Stock_History_log.objects.all(),20)
+    page = request.GET.get('page')
+    query = p.get_page(page)
 
-		context = {
-		"form": form,
-		"title": title,
-		"queryset": queryset,
-	}
-	if form['export_to_CSV'].value() == True:
-		response = HttpResponse(content_type='text/csv')
-		response['Content-Disposition'] = 'attachment; filename="List of stock.csv"'
-		writer = csv.writer(response)
-		writer.writerow(['CATEGORY', 'ITEM NAME', 'QUANTITY'])
-		instance = queryset
-		for stock in instance:
-			writer.writerow([stock.category, stock.item_name, stock.quantity])
-		return response
+    context = {
+        "title": title,
+        "queryset": queryset,
+        "form": form,
+        "query": query,
+    }
 
-	return render(request, "list_item.html", context)
+    if request.method == 'POST':
+        category = form['category'].value()
+        sort_order = form['sort_order'].value()
+        queryset = Stock.objects.filter(item_name__icontains=form['item_name'].value())
+        if category != '':
+            queryset = queryset.filter(category_id=category)
+
+        if sort_order == 'ascending':
+            queryset = queryset.order_by('quantity')
+        elif sort_order == 'descending':
+            queryset = queryset.order_by('-quantity')
+        
+        context = {
+            "form": form,
+            "title": title,
+            "queryset": queryset,
+        }
+        if form['export_to_CSV'].value() == True:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="Stock_List.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['CATEGORY', 'ITEM NAME', 'QUANTITY'])
+            instance = queryset
+            for stock in instance:
+                writer.writerow([stock.category, stock.item_name, stock.quantity])
+            return response
+
+    return render(request, "list_item.html", context)
+
+
+
+
 
 #ok na 
 def home(request):
@@ -203,54 +223,63 @@ def reorder_level(request, pk):
         'instance': queryset,
         'form': form,
     }
-    return render(request, 'add_items.html', context)
+    return render(request, 'reorder_level.html', context)
 
 
 def list_history(request):
-	header = 'LIST OF ITEMS'
-	form = StockHistorySearchForm(request.POST or None)
-	queryset = Stock_History_log.objects.all()
-	context = {
-		"header": header,
-		"queryset": queryset,
-		"form": form,
-	}
-	if request.method == 'POST':
-		category = form['category'].value()
-		queryset = Stock_History_log.objects.filter(
-							item_name__icontains=form['item_name'].value(),
-							last_updated__range=[form['start_date'].value(),form['end_date'].value()]
-						)
+    header = 'LIST OF ITEMS'
+    form = StockHistorySearchForm(request.POST or None)
+    queryset = Stock_History_log.objects.all()
+    sort_order = request.GET.get('sort', '-last_updated')
+    if sort_order not in ['-last_updated', 'last_updated']:
+        sort_order = '-last_updated'
+    queryset = queryset.order_by(sort_order)
+    p = Paginator(queryset, 14)
+    page = request.GET.get('page')
+    query = p.get_page(page)
+    context = {
+        "header": header,
+        "queryset": queryset,
+        "form": form,
+        "query": query,
+    }
+    if request.method == 'POST':
+        category = form['category'].value()
+        queryset = Stock_History_log.objects.filter(
+                            item_name__icontains=form['item_name'].value(),
+                            last_updated__range=[form['start_date'].value(),form['end_date'].value()]
+                        )
 
-		if form['export_to_CSV'].value() == True:
-			response = HttpResponse(content_type='text/csv')
-			response['Content-Disposition'] = 'attachment; filename="Stock History.csv"'
-			writer = csv.writer(response)
-			writer.writerow(
-				['CATEGORY', 
-				'ITEM NAME',
-				'QUANTITY', 
-				'ISSUE QUANTITY', 
-				'RECEIVE QUANTITY', 
-				'RECEIVE BY', 
-				'ISSUE BY', 
-				'LAST UPDATED'])
-			instance = queryset
-			for stock in instance:
-				writer.writerow(
-				[stock.category, 
-				stock.item_name, 
-				stock.quantity, 
-				stock.issue_quantity, 
-				stock.receive_quantity, 
-				stock.receive_by, 
-				stock.issue_by, 
-				stock.last_updated])
-			return response
+        if form['export_to_CSV'].value() == True:
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="Stock History.csv"'
+            writer = csv.writer(response)
+            writer.writerow(
+                ['CATEGORY', 
+                'ITEM NAME',
+                'QUANTITY', 
+                'ISSUE QUANTITY', 
+                'RECEIVE QUANTITY', 
+                'RECEIVE BY', 
+                'ISSUE BY', 
+                'LAST UPDATED'])
+            instance = queryset
+            for stock in instance:
+                writer.writerow(
+                [stock.category, 
+                stock.item_name, 
+                stock.quantity, 
+                stock.issue_quantity, 
+                stock.receive_quantity, 
+                stock.receive_by, 
+                stock.issue_by, 
+                stock.last_updated])
+            return response
 
-		context = {
-		"form": form,
-		"header": header,
-		"queryset": queryset,
-	}
-	return render(request, "list_history.html",context)
+        context = {
+        "form": form,
+        "header": header,
+        "queryset": queryset,
+        
+        }
+    return render(request, "list_history.html",context)

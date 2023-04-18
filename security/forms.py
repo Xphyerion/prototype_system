@@ -5,22 +5,21 @@ from django.core.validators import MinLengthValidator
 
 #ok na 
 class StockUpdateForm(forms.ModelForm):
-    current_user = forms.CharField(label='Updated by', widget=forms.TextInput(attrs={'readonly': 'readonly'}), required=False)
-
     class Meta:
         model = Stock
-        fields = ['category', 'item_name', 'current_user']
+        fields = ['category', 'item_name']
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
-        self.fields['current_user'].initial = self.request.user.username
 
     def save(self, commit=True):
         stock = super().save(commit=False)
+        stock.updated_by = self.request.user.username
         if commit:
             stock.save()
         return stock
+
 
 
 
@@ -91,16 +90,17 @@ class ReorderLevelForm(forms.ModelForm):
 
 
 class StockHistorySearchForm(forms.ModelForm):
-    export_to_CSV = forms.BooleanField(required=False)
-    start_date = forms.DateTimeField(required=False)
-    end_date = forms.DateTimeField(required=False)
+    export_to_CSV = forms.BooleanField(required=False)  
+    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
     class Meta:
         model = Stock_History_log
-        fields = ['category', 'item_name', 'start_date', 'end_date']
+        fields = ['category', 'item_name']
 
-
+#ok na 
 class StockSearchForm(forms.ModelForm):
     export_to_CSV = forms.BooleanField(required=False)
+    sort_order = forms.ChoiceField(choices=[('ascending', 'Ascending'), ('descending', 'Descending')], required=False, label='Sort Order')
+    category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
     class Meta:
         model = Stock
         fields = ['category', 'item_name']
