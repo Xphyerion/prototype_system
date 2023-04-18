@@ -182,7 +182,7 @@ def list_item(request):
 
 
 
-@login_required 
+
 def home(request):
 	# check if logging in
 	if request.method == 'POST':
