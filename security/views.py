@@ -11,7 +11,7 @@ from django.core.paginator import Paginator
 from django.db.models import F, Q 
 
 
-# ok na
+@login_required
 def issue_items(request, pk):
     stock_item = Stock.objects.get(id=pk)
     form = IssueForm(request.POST or None, instance=stock_item, initial={'issue_by': request.user.username})
@@ -40,7 +40,7 @@ def issue_items(request, pk):
 
 
 
-#OK na 
+@login_required
 def add_category(request):
     form = CategoryForm(request.POST or None)
     if form.is_valid():
@@ -55,8 +55,7 @@ def add_category(request):
     return render(request, "add_category.html", context)
 
 
-
-#ok na 
+@login_required 
 def receive_items(request, pk):
     stock_item = Stock.objects.get(id=pk)
     if request.method == 'POST':
@@ -80,7 +79,7 @@ def receive_items(request, pk):
     }
     return render(request, "receive_items.html", context)
 
-#OK na
+@login_required
 def delete_items(request, pk):
 	queryset = Stock.objects.get(id=pk)
 	if request.method == 'POST':
@@ -88,7 +87,7 @@ def delete_items(request, pk):
 		return redirect('/list_item')
 	return render(request, 'delete_items.html')
 
-#OK na
+@login_required
 def update_items(request, pk):
     queryset = Stock.objects.get(id=pk)
     form = StockUpdateForm(request.POST or None, instance=queryset, request=request)
@@ -105,8 +104,7 @@ def update_items(request, pk):
     return render(request, 'add_items.html', context)
 
 
-
-#ok na 
+@login_required
 def add_items(request):
     if request.method == 'POST':
         form = StockCreateForm(request.POST, user=request.user)
@@ -126,7 +124,7 @@ def add_items(request):
     return render(request, "add_items.html", context)
 
 
-#ok na
+@login_required
 def stock_detail(request, pk):
 	queryset = Stock.objects.get(id=pk)
 	context = {
@@ -135,7 +133,7 @@ def stock_detail(request, pk):
 	}
 	return render(request, "stock_detail.html", context)
 
-#ok
+@login_required
 def list_item(request):
     title = 'Stocks'
     form = StockSearchForm(request.POST or None)
@@ -184,7 +182,7 @@ def list_item(request):
 
 
 
-#ok na 
+@login_required 
 def home(request):
 	# check if logging in
 	if request.method == 'POST':
@@ -202,7 +200,7 @@ def home(request):
 	else:		
 		return render(request, 'home.html', {})
 
-#ok na
+@login_required
 def logout_user(request):
 	logout(request)
 	messages.success(request, 'You have been logged out!!')
@@ -210,7 +208,7 @@ def logout_user(request):
 
 
 
-#ok na 
+@login_required 
 def reorder_level(request, pk):
     queryset = Stock.objects.get(id=pk)
     form = ReorderLevelForm(request.POST or None, instance=queryset, request=request)
@@ -225,7 +223,7 @@ def reorder_level(request, pk):
     }
     return render(request, 'reorder_level.html', context)
 
-
+@login_required
 def list_history(request):
     header = 'LIST OF ITEMS'
     form = StockHistorySearchForm(request.POST or None)
